@@ -7,7 +7,7 @@ import {
   type CSSProperties,
 } from "react";
 import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring } from "framer-motion";
-import { ArrowDown, Heart, Music2, Pause, Play, RotateCcw, Sparkles, X } from "lucide-react";
+import { ArrowDown, Heart, Music2, Pause, RotateCcw, Sparkles, X } from "lucide-react";
 import { siteContent, type Memory } from "./data";
 
 type Point = { x: number; y: number; z: number; size: number; alpha: number; phase: number };
@@ -268,7 +268,7 @@ function Intro({ onEnter }: { onEnter: () => void }) {
   );
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children }: { children: ReactNode }) {
   return <div className="section-label"><span />{children}</div>;
 }
 
