@@ -52,7 +52,10 @@ export default function FlowerUniverse({ onClose }: { onClose: () => void }) {
         const pixels=brush.getImageData(0,0,224,400);
         for(let y=0;y<400;y++)for(let x=0;x<224;x++){
           const j=(y*224+x)*4;const brightness=Math.max(pixels.data[j],pixels.data[j+1],pixels.data[j+2]);
-          pixels.data[j+3]=Math.round(Math.max(0,Math.min(1,(brightness-7)/20))*Math.min(1,(400-y)/25)*255);
+          const alpha=Math.max(0,Math.min(1,(brightness-5)/85));
+          // Remove the black matte from antialiased edges before compositing.
+          if(alpha>0&&alpha<1)for(let c=0;c<3;c++)pixels.data[j+c]=Math.min(255,pixels.data[j+c]/alpha);
+          pixels.data[j+3]=Math.round(alpha*Math.min(1,(400-y)/25)*255);
         }
         brush.putImageData(pixels,0,0);
         brush.globalCompositeOperation='source-atop';brush.fillStyle=i>=3?'rgba(35,44,18,.12)':'rgba(255,220,140,.025)';brush.fillRect(0,0,224,400);brush.globalCompositeOperation='source-over';
