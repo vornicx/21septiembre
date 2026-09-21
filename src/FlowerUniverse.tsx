@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Pause, Play } from 'lucide-react';
-import { flowerKinds, flowerShape } from './flowers';
+import { flowerPetals } from './flowers';
 
 export default function FlowerUniverse({ onClose }: { onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -22,8 +22,7 @@ export default function FlowerUniverse({ onClose }: { onClose: () => void }) {
     const ctx = el.getContext('2d');
     if (!ctx) return;
     // Draw each flower once, then reuse the sprite throughout the landscape.
-    const sprites = flowerKinds.map(kind => {
-    const shape = flowerShape(kind);
+    const sprites = [0, 25, -20].map(rotation => {
     const sprite = document.createElement('canvas');
     sprite.width = 160; sprite.height = 240;
     const s = sprite.getContext('2d')!;
@@ -32,21 +31,15 @@ export default function FlowerUniverse({ onClose }: { onClose: () => void }) {
     s.fillStyle = '#4c6337';
     s.beginPath(); s.moveTo(76,184); s.quadraticCurveTo(22,178,30,138); s.quadraticCurveTo(72,144,76,184); s.fill();
     s.beginPath(); s.moveTo(76,156); s.quadraticCurveTo(122,150,130,119); s.quadraticCurveTo(86,120,76,156); s.fill();
-    for(let i=0;i<shape.petals;i++){
-      s.save(); s.translate(80,70); s.rotate(i*Math.PI*2/shape.petals);
-      const gold=s.createLinearGradient(0,-65,0,35);gold.addColorStop(0,kind==='daisy'?'#fff4b0':'#ffe773');gold.addColorStop(.5,'#f7ce47');gold.addColorStop(1,'#c18b20');
-      s.fillStyle=gold;s.strokeStyle='#d4a531';s.lineWidth=.7;const petal=new Path2D(shape.path);s.fill(petal);s.stroke(petal);s.restore();
-    }
-    if(kind==='tulip'){
-      s.save();s.translate(80,70);s.strokeStyle='#c99927';s.lineWidth=1.5;s.stroke(new Path2D('M0 35 Q-20 -1 -16 -29 M0 35 Q20 -1 17 -29'));s.restore();
-    }else{
-      s.fillStyle=shape.color;s.beginPath();s.arc(80,70,shape.center,0,Math.PI*2);s.fill();
-      s.fillStyle='#eac463';for(let i=0;i<(kind==='sunflower'?38:18);i++){const r=Math.sqrt(i)*(kind==='sunflower'?2.5:1.6);s.beginPath();s.arc(80+Math.cos(i*2.4)*r,70+Math.sin(i*2.4)*r,.9,0,Math.PI*2);s.fill();}
+    for(const petal of flowerPetals('rose')){
+      s.save();s.translate(80,70);s.rotate((petal.angle+rotation)*Math.PI/180);s.scale(petal.scale,petal.scale);
+      const gold=s.createLinearGradient(0,-65,15,25);gold.addColorStop(0,petal.light);gold.addColorStop(.5,'#f3d15a');gold.addColorStop(1,petal.shade);
+      s.fillStyle=gold;s.strokeStyle='#c59a32';s.lineWidth=.7;const path=new Path2D(petal.path);s.fill(path);s.stroke(path);s.restore();
     }
     return sprite;
     });
     let seed=2109;const random=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646;};
-    const flowers=Array.from({length:1000},(_,i)=>({kind:i%flowerKinds.length,x:(random()-.5)*15,z:random()*26,size:.7+random()*.55,phase:random()*6.28}));
+    const flowers=Array.from({length:1000},(_,i)=>({kind:i%sprites.length,x:(random()-.5)*15,z:random()*26,size:.7+random()*.55,phase:random()*6.28}));
     let w=0,h=0,frame=0,last=0,time=position.current.time,travel=position.current.travel;
     const resize=()=>{w=el.clientWidth;h=el.clientHeight;const dpr=Math.min(devicePixelRatio||1,1.75);el.width=Math.round(w*dpr);el.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw();};
     function draw(){
@@ -68,7 +61,7 @@ export default function FlowerUniverse({ onClose }: { onClose: () => void }) {
   }, [paused]);
 
   return <dialog className="universe-dialog" ref={dialog} onCancel={onClose} aria-labelledby="universe-title">
-    <canvas ref={canvas} className="infinite-field" aria-label="Campo de margaritas, tulipanes, amapolas y girasoles amarillos hasta el horizonte" role="img"/>
+    <canvas ref={canvas} className="infinite-field" aria-label="Campo de rosas amarillas que se extiende hasta el horizonte" role="img"/>
     <div className="universe-shade"/>
     <nav className="universe-controls" aria-label="Controles del campo"><button onClick={onClose}><ArrowLeft size={16}/> Volver a tu nota</button><button onClick={()=>setPaused(p=>!p)} aria-label={paused?'Animar el campo':'Pausar el movimiento'}>{paused?<Play size={17}/>:<Pause size={17}/>}</button></nav>
     <div className="universe-dedication"><p>UN UNIVERSO DE FLORES, SOLO PARA TI</p><h2 id="universe-title">Haridian,<br/><em>te quiero.</em></h2><span>Si pudiera, te regalaría un campo entero.</span></div>

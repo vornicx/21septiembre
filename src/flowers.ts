@@ -1,11 +1,16 @@
-// Shared silhouettes keep the bouquet and the moving field visually consistent.
-export type FlowerKind = 'sunflower' | 'daisy' | 'tulip' | 'poppy';
-export const flowerKinds: FlowerKind[] = ['sunflower', 'daisy', 'tulip', 'poppy'];
-export function flowerShape(kind: FlowerKind) {
-  switch (kind) {
-    case 'daisy': return { petals: 17, path: 'M-3 -8 C-12 -27 -10 -61 0 -65 C10 -61 12 -27 3 -8Z', center: 10, color: '#d69a22' };
-    case 'poppy': return { petals: 5, path: 'M-5 -4 C-42 -12 -43 -51 -23 -59 C-8 -67 25 -61 30 -44 C34 -24 16 -10 5 -4Z', center: 9, color: '#8b681b' };
-    case 'tulip': return { petals: 1, path: 'M0 35 C-40 25 -43 -16 -38 -50 L-16 -29 L0 -63 L17 -29 L38 -50 C45 -10 37 28 0 35Z', center: 0, color: '#dfae2c' };
-    default: return { petals: 13, path: 'M-5 -12 C-24 -34 -15 -63 0 -66 C16 -53 22 -32 5 -12Z', center: 19, color: '#49311e' };
-  }
+export type FlowerKind = 'rose' | 'peony';
+export const bouquetKinds: FlowerKind[] = ['peony', 'rose', 'peony', 'rose', 'rose', 'peony', 'rose'];
+// Petals overlap from the outside inward: cupped spirals for roses,
+// more numerous, scalloped petals for the fuller peonies.
+export function flowerPetals(kind: FlowerKind) {
+  const layers = kind === 'rose' ? [5, 5, 4, 4, 3, 3] : [10, 11, 9, 8, 7, 5];
+  return layers.flatMap((count, layer) => Array.from({ length: count }, (_, i) => ({
+    angle: i * 360 / count + layer * (kind === 'rose' ? 43 : 19),
+    scale: Math.pow(kind === 'rose' ? .72 : .76, layer),
+    path: kind === 'rose'
+      ? 'M-27 20 C-53 5 -62 -27 -42 -47 C-20 -66 17 -64 38 -44 C57 -27 42 1 20 17 C2 9 -9 8 -27 20Z'
+      : 'M-17 16 C-39 4 -47 -23 -38 -40 C-43 -52 -27 -63 -18 -56 C-10 -69 4 -65 10 -58 C25 -67 37 -55 33 -44 C47 -35 34 -9 17 15 Q0 7 -17 16Z',
+    light: kind === 'rose' ? '#ffed98' : '#fff1ae',
+    shade: layer > 3 ? '#bf861b' : '#dab03b',
+  })));
 }

@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react';
 import FlowerUniverse from './FlowerUniverse';
-import { flowerKinds, flowerShape } from './flowers';
+import { bouquetKinds, flowerPetals } from './flowers';
 import { ArrowDown, ArrowUp, Heart, Sparkles } from 'lucide-react';
 
 function Bouquet() {
   const flowers = [{x:172,y:235,s:.84,r:-22},{x:330,y:198,s:.9,r:18},{x:224,y:128,s:.86,r:-12},{x:395,y:296,s:.76,r:32},{x:115,y:340,s:.72,r:-30},{x:275,y:305,s:1.08,r:8},{x:355,y:96,s:.58,r:20}];
-  return <svg className="bouquet" viewBox="0 0 520 650" role="img" aria-label="Un ramo de margaritas, tulipanes, amapolas y girasoles amarillos">
+  return <svg className="bouquet" viewBox="0 0 520 650" role="img" aria-label="Un ramo de peonías y rosas amarillas">
     <defs>
       <linearGradient id="petal" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#fff2a2"/><stop offset=".5" stopColor="#efc64b"/><stop offset="1" stopColor="#b9821f"/></linearGradient>
       <radialGradient id="center"><stop stopColor="#6b4927"/><stop offset=".8" stopColor="#392a1c"/><stop offset="1" stopColor="#9a7133"/></radialGradient>
@@ -19,11 +19,8 @@ function Bouquet() {
       <path d="M215 424 Q135 406 154 361 Q212 362 215 424Z"/><path d="M268 554 Q307 482 362 501 Q332 549 268 554Z"/>
       <path d="M203 338 Q173 265 127 280 Q136 327 203 338Z"/><path d="M310 333 Q355 256 384 274 Q383 321 310 333Z"/>
     </g>
-    {flowers.map((f,i)=>{const kind=flowerKinds[i%flowerKinds.length];const shape=flowerShape(kind);return <g key={i} className={`bloom bloom-${i}`} style={{transformOrigin:`${f.x}px ${f.y}px`}}><g transform={`translate(${f.x} ${f.y}) rotate(${f.r}) scale(${f.s*1.18})`}>
-      {Array.from({length:shape.petals},(_,j)=><path key={j} transform={`rotate(${j*360/shape.petals})`} d={shape.path} fill="url(#petal)" stroke="#d9ad35" strokeWidth=".7"/>)}
-      {kind==='tulip' && <><path d="M0 34 Q-20 -1 -16 -29 M0 34 Q20 -1 17 -29" stroke="#c99927" strokeWidth="1.5" fill="none"/><path d="M-5 24 Q-12 0 -7 -16" stroke="#fff1a0" strokeWidth="2" fill="none" opacity=".6"/></>}
-      {shape.center>0 && <circle r={shape.center} fill={kind==='sunflower'?'url(#center)':shape.color}/>}
-      {Array.from({length:kind==='sunflower'?37:kind==='tulip'?0:18},(_,j)=>{const a=j*2.4,r=Math.sqrt(j)*(kind==='sunflower'?2.6:1.6);return <circle key={j} cx={Math.cos(a)*r} cy={Math.sin(a)*r} r=".9" fill="#f2cb65" opacity=".7"/>})}
+    {flowers.map((f,i)=>{const kind=bouquetKinds[i];return <g key={i} className={`bloom bloom-${i}`} style={{transformOrigin:`${f.x}px ${f.y}px`}}><g transform={`translate(${f.x} ${f.y}) rotate(${f.r}) scale(${f.s*1.25})`}>
+      {flowerPetals(kind).map((petal,j)=><g key={j} transform={`rotate(${petal.angle}) scale(${petal.scale})`}><defs><linearGradient id={`bloom-${i}-${j}`} x1="0" y1="0" x2="0.3" y2="1"><stop stopColor={petal.light}/><stop offset=".5" stopColor="#f3d15a"/><stop offset="1" stopColor={petal.shade}/></linearGradient></defs><path d={petal.path} fill={`url(#bloom-${i}-${j})`} stroke="#c59a32" strokeWidth=".7"/></g>)}
     </g></g>})}
     <g fill="none" stroke="#c6aa77" strokeWidth="3"><path d="M245 539 Q265 548 289 538 M246 545 Q265 554 287 544"/><path d="M266 546 C219 503 209 551 266 546 C317 511 321 553 266 546 M266 547 Q247 565 240 583 M268 547 Q286 568 293 573"/></g>
   </svg>;
