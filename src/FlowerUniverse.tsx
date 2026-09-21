@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Pause, Play } from 'lucide-react';
+import { flowerKinds, flowerShape } from './flowers';
 
 export default function FlowerUniverse({ onClose }: { onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -21,6 +22,8 @@ export default function FlowerUniverse({ onClose }: { onClose: () => void }) {
     const ctx = el.getContext('2d');
     if (!ctx) return;
     // Draw each flower once, then reuse the sprite throughout the landscape.
+    const sprites = flowerKinds.map(kind => {
+    const shape = flowerShape(kind);
     const sprite = document.createElement('canvas');
     sprite.width = 160; sprite.height = 240;
     const s = sprite.getContext('2d')!;
@@ -29,15 +32,21 @@ export default function FlowerUniverse({ onClose }: { onClose: () => void }) {
     s.fillStyle = '#4c6337';
     s.beginPath(); s.moveTo(76,184); s.quadraticCurveTo(22,178,30,138); s.quadraticCurveTo(72,144,76,184); s.fill();
     s.beginPath(); s.moveTo(76,156); s.quadraticCurveTo(122,150,130,119); s.quadraticCurveTo(86,120,76,156); s.fill();
-    for(let i=0;i<13;i++){
-      s.save(); s.translate(80,70); s.rotate(i*Math.PI*2/13);
-      const gold=s.createLinearGradient(0,-58,0,-10);gold.addColorStop(0,'#fff2a0');gold.addColorStop(.48,'#f7ce47');gold.addColorStop(1,'#c18b20');
-      s.fillStyle=gold;s.beginPath();s.moveTo(-5,-12);s.bezierCurveTo(-24,-34,-15,-63,0,-66);s.bezierCurveTo(16,-53,22,-32,5,-12);s.closePath();s.fill();s.restore();
+    for(let i=0;i<shape.petals;i++){
+      s.save(); s.translate(80,70); s.rotate(i*Math.PI*2/shape.petals);
+      const gold=s.createLinearGradient(0,-65,0,35);gold.addColorStop(0,kind==='daisy'?'#fff4b0':'#ffe773');gold.addColorStop(.5,'#f7ce47');gold.addColorStop(1,'#c18b20');
+      s.fillStyle=gold;s.strokeStyle='#d4a531';s.lineWidth=.7;const petal=new Path2D(shape.path);s.fill(petal);s.stroke(petal);s.restore();
     }
-    const center=s.createRadialGradient(76,66,1,80,70,19);center.addColorStop(0,'#84613a');center.addColorStop(1,'#322619');s.fillStyle=center;s.beginPath();s.arc(80,70,19,0,Math.PI*2);s.fill();
-    s.fillStyle='#b79247';for(let i=0;i<38;i++){const r=Math.sqrt(i)*2.5;s.beginPath();s.arc(80+Math.cos(i*2.4)*r,70+Math.sin(i*2.4)*r,1,0,Math.PI*2);s.fill();}
+    if(kind==='tulip'){
+      s.save();s.translate(80,70);s.strokeStyle='#c99927';s.lineWidth=1.5;s.stroke(new Path2D('M0 35 Q-20 -1 -16 -29 M0 35 Q20 -1 17 -29'));s.restore();
+    }else{
+      s.fillStyle=shape.color;s.beginPath();s.arc(80,70,shape.center,0,Math.PI*2);s.fill();
+      s.fillStyle='#eac463';for(let i=0;i<(kind==='sunflower'?38:18);i++){const r=Math.sqrt(i)*(kind==='sunflower'?2.5:1.6);s.beginPath();s.arc(80+Math.cos(i*2.4)*r,70+Math.sin(i*2.4)*r,.9,0,Math.PI*2);s.fill();}
+    }
+    return sprite;
+    });
     let seed=2109;const random=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646;};
-    const flowers=Array.from({length:1000},()=>({x:(random()-.5)*15,z:random()*26,size:.7+random()*.55,phase:random()*6.28}));
+    const flowers=Array.from({length:1000},(_,i)=>({kind:i%flowerKinds.length,x:(random()-.5)*15,z:random()*26,size:.7+random()*.55,phase:random()*6.28}));
     let w=0,h=0,frame=0,last=0,time=position.current.time,travel=position.current.travel;
     const resize=()=>{w=el.clientWidth;h=el.clientHeight;const dpr=Math.min(devicePixelRatio||1,1.75);el.width=Math.round(w*dpr);el.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw();};
     function draw(){
@@ -47,7 +56,7 @@ export default function FlowerUniverse({ onClose }: { onClose: () => void }) {
       const sun=ctx.createRadialGradient(w*.72,horizon-26,0,w*.72,horizon-26,h*.34);sun.addColorStop(0,'#f7d89577');sun.addColorStop(.2,'#e7c37725');sun.addColorStop(1,'#e7c37700');ctx.fillStyle=sun;ctx.fillRect(0,0,w,h);
       const ground=ctx.createLinearGradient(0,horizon,0,h);ground.addColorStop(0,'#868145');ground.addColorStop(.25,'#4d5a31');ground.addColorStop(1,'#132319');ctx.fillStyle=ground;ctx.fillRect(0,horizon,w,h-horizon);
       const depth=flowers.map(f=>({...f,d:1+((f.z-travel)%26+26)%26})).sort((a,b)=>b.d-a.d);
-      for(const f of depth){const scale=1/f.d;const x=w/2+f.x*w*.8*scale;const y=horizon+h*1.08*scale;const size=Math.min(w,h)*.55*scale*f.size;if(x < -size||x>w+size)continue;ctx.globalAlpha=Math.min(1,.42+scale*4);const sway=paused?0:Math.sin(time*.7+f.phase)*size*.035;ctx.drawImage(sprite,x-size/2+sway,y-size*1.5,size,size*1.5);}
+      for(const f of depth){const scale=1/f.d;const x=w/2+f.x*w*.8*scale;const y=horizon+h*1.08*scale;const size=Math.min(w,h)*.55*scale*f.size;if(x < -size||x>w+size)continue;ctx.globalAlpha=Math.min(1,.42+scale*4);const sway=paused?0:Math.sin(time*.7+f.phase)*size*.035;ctx.drawImage(sprites[f.kind],x-size/2+sway,y-size*1.5,size,size*1.5);}
       ctx.globalAlpha=1;
       const haze=ctx.createLinearGradient(0,horizon-5,0,horizon+h*.13);haze.addColorStop(0,'#c1a46870');haze.addColorStop(1,'#c1a46800');ctx.fillStyle=haze;ctx.fillRect(0,horizon-5,w,h*.14);
       for(let i=0;i<24;i++){const x=((i*.618+Math.sin(time*.08+i)*.02)%1+1)%1*w;const y=h*(.23+((i*.137+time*.006)% .7));ctx.fillStyle=`rgba(255,224,139,${.2+Math.sin(time+i)*.13})`;ctx.beginPath();ctx.arc(x,y,i%3===0?1.7:1,0,Math.PI*2);ctx.fill();}
@@ -59,7 +68,7 @@ export default function FlowerUniverse({ onClose }: { onClose: () => void }) {
   }, [paused]);
 
   return <dialog className="universe-dialog" ref={dialog} onCancel={onClose} aria-labelledby="universe-title">
-    <canvas ref={canvas} className="infinite-field" aria-label="Campo ilustrado de flores amarillas que se extiende hasta el horizonte" role="img"/>
+    <canvas ref={canvas} className="infinite-field" aria-label="Campo de margaritas, tulipanes, amapolas y girasoles amarillos hasta el horizonte" role="img"/>
     <div className="universe-shade"/>
     <nav className="universe-controls" aria-label="Controles del campo"><button onClick={onClose}><ArrowLeft size={16}/> Volver a tu nota</button><button onClick={()=>setPaused(p=>!p)} aria-label={paused?'Animar el campo':'Pausar el movimiento'}>{paused?<Play size={17}/>:<Pause size={17}/>}</button></nav>
     <div className="universe-dedication"><p>UN UNIVERSO DE FLORES, SOLO PARA TI</p><h2 id="universe-title">Haridian,<br/><em>te quiero.</em></h2><span>Si pudiera, te regalaría un campo entero.</span></div>
