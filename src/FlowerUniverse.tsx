@@ -59,6 +59,7 @@ export default function FlowerUniverse({ onClose }: { onClose: () => void }) {
     plant.src='/art/rose-plant.webp';
     let seed=2109;const random=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646;};
     const flowers=Array.from({length:1400},(_,i)=>({kind:i%sprites.length,x:(random()<.5?-1:1)*(.24+random()*8),z:random()*26,size:.7+random()*.55,phase:random()*6.28}));
+    const grasses=Array.from({length:2400},()=>({x:(random()-.5)*17,z:random()*26,height:.4+random()*.8,shade:Math.floor(random()*4)}));
     let w=0,h=0,frame=0,last=0,lastDraw=0,time=position.current.time,travel=position.current.travel;
     const resize=()=>{w=el.clientWidth;h=el.clientHeight;const dpr=Math.min(devicePixelRatio||1,1.75);el.width=Math.round(w*dpr);el.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw();};
     function draw(){
@@ -66,8 +67,12 @@ export default function FlowerUniverse({ onClose }: { onClose: () => void }) {
       const horizon=h*.47;
       const sky=ctx.createLinearGradient(0,0,0,horizon);sky.addColorStop(0,'#111e23');sky.addColorStop(.65,'#465047');sky.addColorStop(1,'#c1a468');ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
       const sun=ctx.createRadialGradient(w*.72,horizon-26,0,w*.72,horizon-26,h*.34);sun.addColorStop(0,'#f7d89577');sun.addColorStop(.2,'#e7c37725');sun.addColorStop(1,'#e7c37700');ctx.fillStyle=sun;ctx.fillRect(0,0,w,h);
-      const ground=ctx.createLinearGradient(0,horizon,0,h);ground.addColorStop(0,'#868145');ground.addColorStop(.25,'#4d5a31');ground.addColorStop(1,'#132319');ctx.fillStyle=ground;ctx.fillRect(0,horizon,w,h-horizon);
+      const ground=ctx.createLinearGradient(0,horizon,0,h);ground.addColorStop(0,'#c1a468');ground.addColorStop(.12,'#747746');ground.addColorStop(.5,'#36462c');ground.addColorStop(1,'#132319');ctx.fillStyle=ground;ctx.fillRect(0,horizon,w,h-horizon);
       const depth=flowers.map(f=>({...f,d:.35+((f.z-travel)%26+26)%26})).sort((a,b)=>b.d-a.d);
+      // Fine ground cover travels with the roses, anchoring their stems in the meadow.
+      const grassColors=['#667245','#899052','#475e35','#a19b59'];
+      for(const g of grasses){const d=.35+((g.z-travel)%26+26)%26;const scale=1/d;const x=w/2+g.x*w*.8*scale;const y=horizon+h*1.15*scale;if(x<0||x>w||y>h+40)continue;const blade=Math.min(w,h)*.035*scale*g.height;ctx.globalAlpha=Math.min(.6,scale*5)*Math.min(1,(26.35-d)*2);ctx.strokeStyle=grassColors[g.shade];ctx.lineWidth=Math.max(.55,scale*1.2);ctx.beginPath();ctx.moveTo(x-blade*.4,y);ctx.quadraticCurveTo(x-blade*.7,y-blade*.6,x-blade*.2,y-blade);ctx.moveTo(x,y);ctx.quadraticCurveTo(x+blade*.15,y-blade*.6,x+blade*.6,y-blade*.85);ctx.stroke();}
+      for(const f of depth){const scale=1/f.d;const x=w/2+f.x*w*.8*scale;const y=horizon+h*1.15*scale;const size=Math.min(w,h)*.46*scale*f.size;if(x < -size||x>w+size||y>h+size)continue;ctx.globalAlpha=Math.min(.2,scale*.8);ctx.fillStyle='#0b1910';ctx.beginPath();ctx.ellipse(x,y-size*.07,size*.25,size*.035,0,0,Math.PI*2);ctx.fill();}
       for(const f of depth){const scale=1/f.d;const x=w/2+f.x*w*.8*scale;const y=horizon+h*1.15*scale;const size=Math.min(w,h)*.46*scale*f.size;if(x < -size||x>w+size)continue;ctx.globalAlpha=Math.min(1,.42+scale*4)*Math.min(1,(26.35-f.d)*2);const sway=paused?0:Math.sin(time*.7+f.phase)*size*.035;ctx.drawImage(sprites[f.kind],x-size/2+sway,y-size*1.5,size,size*1.5);}
       ctx.globalAlpha=1;
       canvas.current?.setAttribute("data-distance",travel.toFixed(3));
