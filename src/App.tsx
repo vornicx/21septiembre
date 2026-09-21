@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type ReactNode,
 } from "react";
 import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring } from "framer-motion";
 import { ArrowDown, Heart, Music2, Pause, RotateCcw, Sparkles, X } from "lucide-react";
@@ -243,22 +244,31 @@ function Intro({ onEnter }: { onEnter: () => void }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.4, duration: 1 }}
       >
-        21 · 09
+        {siteContent.introEyebrow}
       </motion.p>
       <motion.h1
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.7, duration: 1 }}
       >
-        {siteContent.intro}
+        <span>{siteContent.introTitle}</span>
+        <em>{siteContent.introAccent}</em>
       </motion.h1>
+      <motion.p
+        className="intro-note"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 2.05, duration: 0.85 }}
+      >
+        {siteContent.introNote}
+      </motion.p>
       <motion.button
         className="enter-button"
         type="button"
         onClick={onEnter}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 2.15, duration: 0.8 }}
+        transition={{ delay: 2.35, duration: 0.8 }}
         whileHover={{ scale: 1.035 }}
         whileTap={{ scale: 0.98 }}
       >
@@ -396,7 +406,7 @@ function App() {
           animate={entered ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ delay: 0.65, duration: 1.3 }}
         >
-          <span className="hero-overline">UN UNIVERSO PARA TI</span>
+          <span className="hero-overline">21 · 09 · PARA TI</span>
           <h1>{siteContent.heroTitle}</h1>
           <p>{siteContent.heroSubtitle}</p>
         </motion.div>
@@ -552,9 +562,10 @@ function App() {
           viewport={{ once: true, amount: 0.65 }}
           transition={{ duration: 1.8, delay: 0.2 }}
         >
-          <span>PARA</span>
+          <span>{siteContent.midpointTitle}</span>
           <h2>{siteContent.recipientName}</h2>
-          <p>{siteContent.wowLine}</p>
+          <p>{siteContent.midpointAccent}</p>
+          <small>{siteContent.midpointNote}</small>
         </motion.div>
       </section>
 
@@ -574,8 +585,9 @@ function App() {
           transition={{ duration: 1.2, delay: 0.45 }}
         >
           <Heart size={18} fill="currentColor" strokeWidth={1.2} />
-          <h2>{siteContent.finale}</h2>
-          <p>No quiero saber cómo termina la historia. Quiero vivirla.</p>
+          <p className="final-prelude">{siteContent.finalePrelude}</p>
+          <h2>{siteContent.finaleTitle}</h2>
+          <p className="final-date">{siteContent.finaleDate}</p>
           <button onClick={replay}>
             <RotateCcw size={15} /> Volver al principio
           </button>
