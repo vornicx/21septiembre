@@ -562,7 +562,7 @@ function App() {
           viewport={{ once: true, amount: 0.65 }}
           transition={{ duration: 1.8, delay: 0.2 }}
         >
-          <span>{siteContent.midpointTitle}</span>
+          <span>PARA TI</span>
           <h2>{siteContent.recipientName}</h2>
           <p>{siteContent.midpointAccent}</p>
           <small>{siteContent.midpointNote}</small>
